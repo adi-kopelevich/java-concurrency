@@ -9,9 +9,8 @@ public class VolatileExchanger {
     private volatile boolean isUpdated = false;
 
     public void put(Object obj) {
-
         while (isUpdated) { // volatile read
-            //wait - do not overwrite existing new object
+            //wait - do not overwrite existing new object (Busy waiting)
         }
         this.obj = obj;
         isUpdated = true; // volatile write
