@@ -1,4 +1,4 @@
-package sample.java.concurrency.producer.consumer;
+package sample.java.concurrency.producer.consumer.blocking.queue;
 
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
