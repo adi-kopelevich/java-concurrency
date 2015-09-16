@@ -1,4 +1,4 @@
-package sample.java.concurrency.sample.java.concurrency.producer.consume.wait.notify;
+package sample.java.concurrency.producer.consumer.wait.notify;
 
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
