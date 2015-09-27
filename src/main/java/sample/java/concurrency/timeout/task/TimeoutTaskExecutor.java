@@ -18,16 +18,14 @@ public class TimeoutTaskExecutor {
                 try {
                     Thread.sleep((TIME_LIMIT_IN_SEC - 1) * 1000);
                 } catch (InterruptedException e) {
-                    System.out.println(Thread.currentThread().getName()+ " was interrupted");
+                    System.out.println(Thread.currentThread().getName() + " was interrupted");
                 }
             }
         });
         try {
             Object retObj = future.get(TIME_LIMIT_IN_SEC, TimeUnit.SECONDS);
             System.out.println("Task completed, return value is " + retObj);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         } catch (TimeoutException e) {
             System.out.println("Exceeded time limit, going to cancel task...");
@@ -51,7 +49,7 @@ public class TimeoutTaskExecutor {
                 try {
                     Thread.sleep((TIME_LIMIT_IN_SEC - 1) * 1000);
                 } catch (InterruptedException e) {
-                    System.out.println(Thread.currentThread().getName()+ " was interrupted");
+                    System.out.println(Thread.currentThread().getName() + " was interrupted");
                 }
                 return "Hi";
             }
@@ -61,9 +59,7 @@ public class TimeoutTaskExecutor {
         try {
             callableReturnValue = callableFuture.get(TIME_LIMIT_IN_SEC, TimeUnit.SECONDS);
             System.out.println("Callable task completed, return object is " + callableReturnValue);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         } catch (TimeoutException e) {
             System.out.println("Exceeded time limit, going to cancel task...");
