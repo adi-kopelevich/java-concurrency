@@ -9,13 +9,15 @@ import java.util.concurrent.Executors;
 /**
  * Created by kopelevi on 29/09/2015.
  */
-public class MultithreadedServerExample implements Runnable {
+public class ThreadPooledServerExample implements Runnable {
     private final int port;
     private boolean isEnabled = true;
     private ServerSocket serverSocket = null;
+    private final ExecutorService executorService;
 
-    MultithreadedServerExample(int port) {
+    public ThreadPooledServerExample(int port, int threadPoolSize) {
         this.port = port;
+        executorService = Executors.newFixedThreadPool(threadPoolSize);
         initServerSocket();
     }
 
@@ -46,13 +48,13 @@ public class MultithreadedServerExample implements Runnable {
             try {                // blocking - wait for a client request
                 Socket socket = serverSocket.accept();
                 System.out.println("Server got a request...");
-                ExecutorService executorService = Executors.newSingleThreadExecutor();
-                executorService.execute(new ProcessingWorker(socket));
-                executorService.shutdown();                // process the client request
+                executorService.execute(new ProcessingWorker(socket));                               // process the client request
                 System.out.println("Server released request processing...");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        executorService.shutdown();
     }
+
 }

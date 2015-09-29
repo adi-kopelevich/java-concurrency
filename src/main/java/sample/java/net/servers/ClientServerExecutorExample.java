@@ -16,13 +16,15 @@ public class ClientServerExecutorExample {
         String host = InetAddress.getLocalHost().getHostName();
 
 //        SingelthreadedServerExample server = new SingelthreadedServerExample(port);
-        MultithreadedServerExample server = new MultithreadedServerExample(port);
+//        MultithreadedServerExample server = new MultithreadedServerExample(port);
+//        ThreadPooledServerExample server = new ThreadPooledServerExample(port, Runtime.getRuntime().availableProcessors());
+                ThreadPooledServerExample server = new ThreadPooledServerExample(port, 4);
         ExecutorService serverExecutor = Executors.newSingleThreadExecutor();
         serverExecutor.execute(server);
         serverExecutor.shutdown();
 
         ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 1000; i++) {
             executorService.execute(new ClientExample(host, port));
         }
         executorService.shutdown();
