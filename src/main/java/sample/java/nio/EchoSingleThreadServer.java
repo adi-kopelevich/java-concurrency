@@ -24,17 +24,17 @@ public class EchoSingleThreadServer {
     }
 
     private Selector initSelector() throws IOException {
-        // create address obj
-        InetSocketAddress add = new InetSocketAddress(LOCALHOST, PORT);
         // open selector
         Selector socketSelector = Selector.open();
         // open server channel
         ServerSocketChannel serverChannel = ServerSocketChannel.open();
         //configure as non-blocking
         serverChannel.configureBlocking(false);
+        // create address obj
+        InetSocketAddress add = new InetSocketAddress(LOCALHOST, PORT);
         // bind server to address
-        System.out.println("Starting echo server on port " + PORT);
         serverChannel.socket().bind(add);
+        System.out.println("Starting echo server on port " + PORT);
 
         //register server channel for non-blocking accept operation
         serverChannel.register(socketSelector, SelectionKey.OP_ACCEPT);
