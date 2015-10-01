@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 /**
  * Created by kopelevi on 01/10/2015.
  */
-public class SelectorClientExampe {
+public class EchoSingleThreadServerClient {
     public static void main(String[] args) {
         InetSocketAddress address = new InetSocketAddress("localhost", 9999);
 
