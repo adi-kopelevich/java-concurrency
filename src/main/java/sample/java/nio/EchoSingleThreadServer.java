@@ -3,49 +3,66 @@ package sample.java.nio;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.util.Iterator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by kopelevi on 01/10/2015.
  */
-public class EchoSingleThreadServer {
+public class EchoSingleThreadServer implements Runnable {
+    private boolean enabled = false;
     private final Selector selector;
     private static final String LOCALHOST = "localhost";
     private static final int PORT = 9999;
     private static final int BUFFER_SIZE = 128;
 
-    public EchoSingleThreadServer() throws IOException {
-        selector = initSelector();
-        loop();
+    public EchoSingleThreadServer() {
+        selector = initSelectorWithServerChannel();
+        setEnabled(true);
     }
 
-    private Selector initSelector() throws IOException {
-        // open selector
-        Selector socketSelector = Selector.open();
-        // open server channel
-        ServerSocketChannel serverChannel = ServerSocketChannel.open();
-        //configure as non-blocking
-        serverChannel.configureBlocking(false);
-        // create address obj
-        InetSocketAddress add = new InetSocketAddress(LOCALHOST, PORT);
-        // bind server to address
-        serverChannel.socket().bind(add);
-        System.out.println("Starting echo server on port " + PORT);
-
-        //register server channel for non-blocking accept operation
-        serverChannel.register(socketSelector, SelectionKey.OP_ACCEPT);
-        return socketSelector;
+    private Selector initSelectorWithServerChannel() {
+        try {
+            // open selector
+            Selector socketSelector = Selector.open();
+            // open server channel
+            ServerSocketChannel serverChannel = ServerSocketChannel.open();
+            //configure as non-blocking
+            serverChannel.configureBlocking(false);
+            // create address obj
+            InetSocketAddress add = new InetSocketAddress(LOCALHOST, PORT);
+            // bind server to address
+            serverChannel.socket().bind(add);
+            System.out.println("Starting echo server on port " + PORT);
+            //register server channel for non-blocking accept operation
+            serverChannel.register(socketSelector, SelectionKey.OP_ACCEPT);
+            return socketSelector;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to init selector with server socket channel", e);
+        }
     }
 
-    private void loop() {
-        while (true) {
+    public synchronized void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        System.out.println("Server isEnabled=" + enabled);
+    }
+
+    public void run() {
+        while (enabled) {
+            System.out.println("Waiting for select (blocking)...");
+            int noOfKeys = 0;
             try {
-                System.out.println("Waiting for select (blocking)...");
-                int noOfKeys = selector.select();
+                noOfKeys = selector.select();
+            } catch (IOException e) {
+                System.out.println("Failed to execute select on selector");
+                e.printStackTrace();
+            } catch (ClosedSelectorException e) {
+                System.out.println("Selector was closed, break loop...");
+                break;
+            }
+            if (noOfKeys > 0) {  // select was executed successfully
                 System.out.println("Number of available selected ops keys: " + noOfKeys);
                 Iterator<SelectionKey> selectedKeys = selector.selectedKeys().iterator();
                 while (selectedKeys.hasNext()) {
@@ -60,29 +77,33 @@ public class EchoSingleThreadServer {
                         handleSocketReadOp(key);
                     }
                 }
-            } catch (Exception e) {
-                throw new RuntimeException("Selector loop was interrupted...", e);
             }
         }
     }
 
-    private void handleServerAcceptOp(SelectionKey key) throws IOException {
+    private void handleServerAcceptOp(SelectionKey key) {
+        SocketChannel socketChannel = null;
         // get server channel from acept op key
         ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
-        // establish connection socket with client
-        SocketChannel socketChannel = serverSocketChannel.accept();
-        // configure socket channel ops as non-blocking (read/write)
-        socketChannel.configureBlocking(false);
-        // register socket's read op to the selector
-        socketChannel.register(selector, SelectionKey.OP_READ);
-        System.out.println("Client connection established...");
+        try {
+            // establish connection socket with client
+            socketChannel = serverSocketChannel.accept();
+            // configure socket channel ops as non-blocking (read/write)
+            socketChannel.configureBlocking(false);
+            // register socket's read op to the selector
+            socketChannel.register(selector, SelectionKey.OP_READ);
+            System.out.println("Client connection established...");
+        } catch (IOException e) {
+            System.out.println("Failed to handle server accept op");
+            e.printStackTrace();
+            closeSocketChannel(socketChannel);
+        }
     }
 
-    private void handleSocketReadOp(SelectionKey key) throws IOException {
+    private void handleSocketReadOp(SelectionKey key) {
         // get socket channel from read op key
-        SocketChannel socketChannel = (SocketChannel) key.channel();
-        // read data from channel
-        try {
+        try (SocketChannel socketChannel = (SocketChannel) key.channel()) {
+            // read data from channel
             ByteBuffer readBuffer = ByteBuffer.allocate(BUFFER_SIZE);
             int numRead = socketChannel.read(readBuffer);
             if (numRead != -1) {
@@ -91,22 +112,45 @@ public class EchoSingleThreadServer {
                 // write to console the msg received from client
                 System.out.println("Read: " + new String(readBuffer.array()).trim());
                 readBuffer.clear();
-            } else {                    // end of read...
-                // close socket channel
-                socketChannel.close();
-                // cancel related ops in selector for that socket channel
-                key.cancel();
             }
         } catch (IOException e) {
-            // close socket channel
-            socketChannel.close();
-            // cancel related ops in selector for that socket channel
-            key.cancel();
-            throw new RuntimeException("failed to handle socket read op", e);
+            System.out.println("Failed to handle socket read op. cause: " + e);
         }
     }
 
-    public static void main(String[] args) throws IOException {
-        new EchoSingleThreadServer();
+    private void closeSocketChannel(SocketChannel socketChannel) {
+        if (socketChannel != null) {
+            try {
+                socketChannel.close();
+            } catch (IOException e1) {
+                System.out.println("Failed to close socket channel");
+                e1.printStackTrace();
+            }
+        }
     }
+
+    private void tearDown() {
+        setEnabled(false);
+        try {
+            System.out.println("Going to stop server...");
+            if (selector != null) {
+                selector.close();
+            }
+            System.out.println("Server is down.");
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to close selector", e);
+        }
+    }
+
+    public static void main(String[] args) throws IOException, InterruptedException {
+        EchoSingleThreadServer server = new EchoSingleThreadServer();
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(server);
+        Thread.sleep(10000);
+        server.tearDown();
+        Thread.sleep(5000);
+        executorService.shutdown();
+    }
+
+
 }
