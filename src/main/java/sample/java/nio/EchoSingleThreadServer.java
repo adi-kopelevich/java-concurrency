@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
  * Created by kopelevi on 01/10/2015.
  */
 public class EchoSingleThreadServer implements Runnable {
-    private boolean enabled = false;
+    private volatile boolean stop = false;
     private final Selector selector;
     private static final String LOCALHOST = "localhost";
     private static final int PORT = 9999;
@@ -20,7 +20,6 @@ public class EchoSingleThreadServer implements Runnable {
 
     public EchoSingleThreadServer() {
         selector = initSelectorWithServerChannel();
-        setEnabled(true);
     }
 
     private Selector initSelectorWithServerChannel() {
@@ -44,13 +43,13 @@ public class EchoSingleThreadServer implements Runnable {
         }
     }
 
-    public synchronized void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-        System.out.println("Server isEnabled=" + enabled);
+    public void stop() {
+        this.stop = true;
+        System.out.println("Server was stopped...");
     }
 
     public void run() {
-        while (enabled) {
+        while (!stop) {
             System.out.println("Waiting for select (blocking)...");
             int noOfKeys = 0;
             try {
@@ -130,7 +129,7 @@ public class EchoSingleThreadServer implements Runnable {
     }
 
     private void tearDown() {
-        setEnabled(false);
+        stop();
         try {
             System.out.println("Going to stop server...");
             if (selector != null) {
@@ -147,8 +146,9 @@ public class EchoSingleThreadServer implements Runnable {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.execute(server);
         Thread.sleep(10000);
-        server.tearDown();
+        server.stop();
         Thread.sleep(5000);
+        server.tearDown();
         executorService.shutdown();
     }
 
