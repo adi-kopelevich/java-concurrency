@@ -43,39 +43,38 @@ public class EchoSingleThreadServer implements Runnable {
         }
     }
 
-    public void stop() {
-        this.stop = true;
-        System.out.println("Server was stopped...");
-    }
-
     public void run() {
         while (!stop) {
             System.out.println("Waiting for select (blocking)...");
             int noOfKeys = 0;
             try {
                 noOfKeys = selector.select();
+                if (noOfKeys > 0) {  // select was executed successfully
+                    System.out.println("Number of available selected ops keys: " + noOfKeys);
+                    Iterator<SelectionKey> selectedKeys = selector.selectedKeys().iterator();
+                    while (selectedKeys.hasNext()) {
+                        // get next available op key to handle
+                        SelectionKey key = selectedKeys.next();
+                        // remove key from the iteration
+                        selectedKeys.remove();
+                        // Check what event is available and deal with it
+                        if (key.isAcceptable()) {
+                            handleServerAcceptOp(key);
+                        } else if (key.isReadable()) {
+                            handleSocketReadOp(key);
+                        }
+                    }
+                }
             } catch (IOException e) {
                 System.out.println("Failed to execute select on selector");
                 e.printStackTrace();
             } catch (ClosedSelectorException e) {
                 System.out.println("Selector was closed, break loop...");
+                e.printStackTrace();
                 break;
-            }
-            if (noOfKeys > 0) {  // select was executed successfully
-                System.out.println("Number of available selected ops keys: " + noOfKeys);
-                Iterator<SelectionKey> selectedKeys = selector.selectedKeys().iterator();
-                while (selectedKeys.hasNext()) {
-                    // get next available op key to handle
-                    SelectionKey key = selectedKeys.next();
-                    // remove key from the iteration
-                    selectedKeys.remove();
-                    // Check what event is available and deal with it
-                    if (key.isAcceptable()) {
-                        handleServerAcceptOp(key);
-                    } else if (key.isReadable()) {
-                        handleSocketReadOp(key);
-                    }
-                }
+            } catch (Exception e) {
+                System.out.println("General error occurred: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }
@@ -128,8 +127,9 @@ public class EchoSingleThreadServer implements Runnable {
         }
     }
 
-    private void tearDown() {
-        stop();
+    public void stop() {
+        stop = true;
+        System.out.println("Server was stopped...");
         try {
             System.out.println("Going to stop server...");
             if (selector != null) {
@@ -148,7 +148,6 @@ public class EchoSingleThreadServer implements Runnable {
         Thread.sleep(10000);
         server.stop();
         Thread.sleep(5000);
-        server.tearDown();
         executorService.shutdown();
     }
 
