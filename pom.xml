@@ -2,10 +2,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>sample.java</groupId>
-    <artifactId>java-samples</artifactId>
+    <artifactId>java-tutorials</artifactId>
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
-    <name>java-samples</name>
+    <name>java-tutorials</name>
     <url>http://maven.apache.org</url>
     <dependencies>
         <dependency>
@@ -16,7 +16,7 @@
         </dependency>
     </dependencies>
       <build>
-        <finalName>java-samples</finalName>
+        <finalName>java-tutorials</finalName>
         <plugins>
             <!--declares the java sources version-->
             <plugin>
