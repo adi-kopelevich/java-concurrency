@@ -26,12 +26,16 @@ public class FileStreamExample {
                 // write data to dest files in chunks
                 byte[] byteBuffer = new byte[16];
                 ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+
                 int numOfBytes2 = byteArrayInputStream.read(byteBuffer, 0, byteBuffer.length);
                 while (numOfBytes2 != -1) {
                     fos.write(new String(byteBuffer, 0, numOfBytes2).getBytes());
                     numOfBytes2 = byteArrayInputStream.read(byteBuffer, 0, byteBuffer.length);
                 }
                 fos.flush();
+
+                byteArrayInputStream.close();
+                byteArrayOutputStream.close();
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
