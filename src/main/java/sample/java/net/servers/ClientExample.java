@@ -41,7 +41,7 @@ public class ClientExample implements Runnable {
             }
             System.out.println(Thread.currentThread().getName() + ": Response - " + responseMsg.toString());
             inputStream.close();
-outputStream.close();
+            outputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
