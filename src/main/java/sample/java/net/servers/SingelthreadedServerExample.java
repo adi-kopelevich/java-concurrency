@@ -12,7 +12,7 @@ import java.net.Socket;
 public class SingelthreadedServerExample implements Runnable {
 
     private final int port;
-    private boolean isEnabled = true;
+    private volatile boolean isEnabled = true;
     private ServerSocket serverSocket = null;
 
     SingelthreadedServerExample(int port) {
@@ -20,7 +20,7 @@ public class SingelthreadedServerExample implements Runnable {
         initServerSocket();
     }
 
-    private void initServerSocket() {
+    private synchronized void initServerSocket() {
         try {
             serverSocket = new ServerSocket(port);
             System.out.println("Starting Server...");
@@ -30,27 +30,32 @@ public class SingelthreadedServerExample implements Runnable {
     }
 
     private void processRequest(Socket socket) {
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         long time = System.currentTimeMillis();
-        try (InputStream inputStream = socket.getInputStream();
-             OutputStream outputStream = socket.getOutputStream()) {
+        try {
             StringBuilder msg = new StringBuilder();
+            InputStream inputStream = socket.getInputStream();
             int currentByte = inputStream.read();
-            while (currentByte != -1) {
+            while (currentByte != 255) {
                 msg.append((char) currentByte);
                 currentByte = inputStream.read();
             }
             System.out.println("Server Received: " + msg.toString());
+
+            String returnMsg = "HTTP/1.1 200 OK\n\n<html><body>" + "Singlethreaded Server: " + time + "(" + msg.toString() + ")</body></html>";
+
+            OutputStream outputStream = socket.getOutputStream();
+            outputStream.write(returnMsg.getBytes());
+            outputStream.flush();
+
+            inputStream.close();
+            outputStream.close();
+            socket.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public synchronized void setEnabled(boolean enabled) throws IOException {
+    public void setEnabled(boolean enabled) throws IOException {
         this.isEnabled = enabled;
         if (enabled) {
             System.out.println("Server is going up...");
@@ -64,7 +69,8 @@ public class SingelthreadedServerExample implements Runnable {
     @Override
     public void run() {
         while (isEnabled) {
-            try (Socket socket = serverSocket.accept()) {                // blocking - wait for a client request
+            try {                // blocking - wait for a client request
+                Socket socket = serverSocket.accept();
                 System.out.println("Server got a request...");
                 processRequest(socket);                 // process the client request
                 System.out.println("Server finished processing a request...");
