@@ -12,14 +12,14 @@ import java.util.UUID;
  */
 public class TCPClientExample {
     public static void main(String[] args) {
-        int port = 123;
-        try (Socket socket = new Socket(InetAddress.getLocalHost(), port);
+        try (Socket socket = new Socket(InetAddress.getLocalHost(), 123);
              OutputStream outputStream = socket.getOutputStream()) {
-            String data = UUID.randomUUID().toString();
-            byte[] buffer = data.getBytes();
-            outputStream.write(buffer);
+            String msgToBeSent = UUID.randomUUID().toString();
+            System.out.println("Msg to be sent: " + msgToBeSent);
+            byte[] bytesToBeSent = msgToBeSent.getBytes();
+            outputStream.write(bytesToBeSent);
             outputStream.flush();
-            System.out.println("Sent: " + Arrays.toString(buffer));
+            System.out.println("Sent Bytes: " + Arrays.toString(bytesToBeSent));
         } catch (IOException e) {
             e.printStackTrace();
         }
