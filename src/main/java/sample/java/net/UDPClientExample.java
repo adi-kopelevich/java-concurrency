@@ -11,12 +11,16 @@ import java.util.UUID;
 public class UDPClientExample {
 
     public static void main(String[] args) {
-        int port = 80;
-        try (DatagramSocket socket = new DatagramSocket()) {
-            byte[] buffer = UUID.randomUUID().toString().getBytes();
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getLocalHost(), port);
-            socket.send(packet);
-            System.out.println(Thread.currentThread().getName()+": Sent - "+ Arrays.toString(buffer));
+        int bufferLength = 10;
+        System.out.println("Buffer length: " + bufferLength);
+        String msgToBeSent = UUID.randomUUID().toString();
+        System.out.println("Message to be sent: " + msgToBeSent);
+        byte[] byteToBeSent = msgToBeSent.getBytes();
+        System.out.println("Byte to be sent: " + Arrays.toString(byteToBeSent));
+        try (DatagramSocket datagramSocket = new DatagramSocket()) {
+            DatagramPacket datagramPacket = new DatagramPacket(byteToBeSent, bufferLength, InetAddress.getLocalHost(), 321);
+            datagramSocket.send(datagramPacket);
+            System.out.println("Message sent.");
         } catch (SocketException e) {
             e.printStackTrace();
         } catch (UnknownHostException e) {

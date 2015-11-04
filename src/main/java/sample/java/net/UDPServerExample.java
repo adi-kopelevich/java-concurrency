@@ -12,12 +12,22 @@ import java.util.Arrays;
 public class UDPServerExample {
 
     public static void main(String[] args) {
-        try (DatagramSocket socket = new DatagramSocket(80)) {
-            int bufferLength = 10;
-            byte[] buffer = new byte[bufferLength];
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-            socket.receive(packet);
-            System.out.println(Thread.currentThread().getName() + ": Received - " + Arrays.toString(packet.getData()));
+        byte[] buffer = new byte[60000];
+        try (DatagramSocket datagramSocket = new DatagramSocket(321)) {
+            DatagramPacket datagramPacket = new DatagramPacket(buffer, 10);
+            datagramSocket.receive(datagramPacket);
+
+            StringBuilder recievedData = new StringBuilder();
+            byte[] receivedBytes = datagramPacket.getData();
+            System.out.println("datagramPacket.getData(): " + Arrays.toString(receivedBytes));
+            for (int i = 0; i < 10; i++) {
+
+                System.out.print("Recived Byte: " + receivedBytes[i]);
+                char receivedChar = (char) receivedBytes[i];
+                System.out.println(", Recived Char: " + receivedChar);
+                recievedData.append(receivedChar);
+            }
+            System.out.println("Received: " + recievedData);
         } catch (SocketException e) {
             e.printStackTrace();
         } catch (IOException e) {
