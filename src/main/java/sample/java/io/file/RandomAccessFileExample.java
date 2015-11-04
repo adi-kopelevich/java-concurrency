@@ -1,4 +1,4 @@
-package sample.java.io;
+package sample.java.io.file;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -12,8 +12,11 @@ public class RandomAccessFileExample {
     public static void main(String[] args) {
         String filePath = "C:\\hi.txt";
         try (RandomAccessFile randomAccessFile = new RandomAccessFile(filePath, "rw")) {
-            randomAccessFile.seek(2);
-            System.out.println(String.valueOf((char) randomAccessFile.read()));
+            int byteAt = 6;
+            randomAccessFile.seek(byteAt);
+            System.out.println("byteAt = " + randomAccessFile.getFilePointer() + " - " + String.valueOf((char) randomAccessFile.read()));
+            randomAccessFile.seek(byteAt-1);
+            randomAccessFile.write("###".getBytes());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

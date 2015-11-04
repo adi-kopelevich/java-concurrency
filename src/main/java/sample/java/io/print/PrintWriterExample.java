@@ -1,8 +1,6 @@
 package sample.java.io.print;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Locale;
 
 /**
@@ -18,6 +16,16 @@ public class PrintWriterExample {
             printWriter.println((float) 123.456);
             printWriter.printf(Locale.UK, "the %s jumped over the %s, %d times\n", "cow", "moon", 2);
             printWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try (FileOutputStream fos = new FileOutputStream(filePath)){
+            PrintStream printStream = new PrintStream(fos);
+            System.setOut(printStream);
+            System.out.println("Hi, What's wrong with you... you're looking kinda...");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
