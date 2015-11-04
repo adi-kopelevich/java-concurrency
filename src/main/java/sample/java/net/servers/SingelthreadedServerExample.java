@@ -77,7 +77,7 @@ public class SingelthreadedServerExample implements Runnable {
             } catch (IOException e) {
                 if (!isEnabled) {
                     System.out.println("Server Stopped.");
-                    return;
+                    break;
                 } else {
                     e.printStackTrace();
                 }
