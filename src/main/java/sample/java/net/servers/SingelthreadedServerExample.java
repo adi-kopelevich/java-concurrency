@@ -75,7 +75,12 @@ public class SingelthreadedServerExample implements Runnable {
                 processRequest(socket);                 // process the client request
                 System.out.println("Server finished processing a request...");
             } catch (IOException e) {
-                e.printStackTrace();
+                if (!isEnabled) {
+                    System.out.println("Server Stopped.");
+                    return;
+                } else {
+                    e.printStackTrace();
+                }
             }
         }
     }

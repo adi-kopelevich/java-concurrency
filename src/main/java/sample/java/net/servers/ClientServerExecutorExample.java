@@ -29,7 +29,7 @@ public class ClientServerExecutorExample {
         }
         executorService.shutdown();
 
-//        Thread.sleep(2000);
-//        server.setEnabled(false);
+        Thread.sleep(5000);
+        server.setEnabled(false);
     }
 }
