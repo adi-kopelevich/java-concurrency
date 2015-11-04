@@ -1,5 +1,7 @@
 package sample.java.servers;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -24,7 +26,7 @@ public class ProcessingWorker implements Runnable {
         long time = System.currentTimeMillis();
         try {
             StringBuilder msg = new StringBuilder();
-            InputStream inputStream = socket.getInputStream();
+            InputStream inputStream = new BufferedInputStream(socket.getInputStream(), 4096);
             int currentByte = inputStream.read();
             while (currentByte != 255) {
                 msg.append((char) currentByte);
@@ -34,7 +36,7 @@ public class ProcessingWorker implements Runnable {
 
             String returnMsg = "HTTP/1.1 200 OK\n\n<html><body>" + "Server: " + time + "(" + msg.toString() + ")</body></html>";
 
-            OutputStream outputStream = socket.getOutputStream();
+            OutputStream outputStream = new BufferedOutputStream(socket.getOutputStream(), 4096);
             outputStream.write(returnMsg.getBytes());
             outputStream.flush();
 

@@ -1,8 +1,6 @@
 package sample.java.servers;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.UUID;
 
@@ -26,14 +24,14 @@ public class ClientExample implements Runnable {
             String msg = UUID.randomUUID().toString();
 
             byte[] dataBytes = msg.getBytes();
-            OutputStream outputStream = socket.getOutputStream();
+            OutputStream outputStream = new BufferedOutputStream(socket.getOutputStream(), 4096);
             outputStream.write(dataBytes);
             outputStream.write(new byte[]{-1});
             outputStream.flush();
             System.out.println(Thread.currentThread().getName() + ": Request - " + msg);
 
             StringBuilder responseMsg = new StringBuilder();
-            InputStream inputStream = socket.getInputStream();
+            InputStream inputStream = new BufferedInputStream(socket.getInputStream(), 4096);
             int currentByte = inputStream.read();
             while (currentByte != -1) {
                 responseMsg.append((char) currentByte);
