@@ -1,21 +1,19 @@
-package sample.java.net.servers;
+package sample.java.servers;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created by kopelevi on 29/09/2015.
  */
-public class MultithreadedServerExample implements Runnable {
+public class SingelthreadedServerExample implements Runnable {
 
     private final ServerSocket serverSocket;
 
     private volatile boolean isEnabled = true;
 
-    MultithreadedServerExample(int port) {
+    SingelthreadedServerExample(int port) {
         try {
             serverSocket = new ServerSocket(port);
             System.out.println("Starting Server...");
@@ -30,10 +28,8 @@ public class MultithreadedServerExample implements Runnable {
             try {                // blocking - wait for a client request
                 Socket socket = serverSocket.accept();
                 System.out.println("Server got a request...");
-                ExecutorService executorService = Executors.newSingleThreadExecutor();
-                executorService.execute(new ProcessingWorker(socket));
-                executorService.shutdown();                // process the client request
-                System.out.println("Server released request processing...");
+                new ProcessingWorker(socket).run();                 // process the client request
+                System.out.println("Server finished processing a request...");
             } catch (IOException e) {
                 if (!isEnabled) {
                     System.out.println("Server Stopped.");

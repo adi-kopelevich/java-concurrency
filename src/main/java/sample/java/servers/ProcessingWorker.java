@@ -1,4 +1,4 @@
-package sample.java.net.servers;
+package sample.java.servers;
 
 import java.io.InputStream;
 import java.io.OutputStream;

@@ -1,19 +1,23 @@
-package sample.java.net.servers;
+package sample.java.servers;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by kopelevi on 29/09/2015.
  */
-public class SingelthreadedServerExample implements Runnable {
+public class ThreadPooledServerExample implements Runnable {
 
     private final ServerSocket serverSocket;
+    private final ExecutorService executorService;
 
     private volatile boolean isEnabled = true;
 
-    SingelthreadedServerExample(int port) {
+    public ThreadPooledServerExample(int port, int threadPoolSize) {
+        executorService = Executors.newFixedThreadPool(threadPoolSize);
         try {
             serverSocket = new ServerSocket(port);
             System.out.println("Starting Server...");
@@ -28,8 +32,8 @@ public class SingelthreadedServerExample implements Runnable {
             try {                // blocking - wait for a client request
                 Socket socket = serverSocket.accept();
                 System.out.println("Server got a request...");
-                new ProcessingWorker(socket).run();                 // process the client request
-                System.out.println("Server finished processing a request...");
+                executorService.execute(new ProcessingWorker(socket));                               // process the client request
+                System.out.println("Server released request processing...");
             } catch (IOException e) {
                 if (!isEnabled) {
                     System.out.println("Server Stopped.");
@@ -39,6 +43,7 @@ public class SingelthreadedServerExample implements Runnable {
                 }
             }
         }
+        executorService.shutdown();
     }
 
     public void stopServer() throws IOException {
