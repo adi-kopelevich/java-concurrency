@@ -11,26 +11,25 @@ public class FileStreamExample {
         File destFile = new File("c:/hi_updated.txt");
         if (sourceFile.exists()) {
 
-            try (FileInputStream fis = new FileInputStream(sourceFile);
-                 FileOutputStream fos = new FileOutputStream(destFile, true)) {
+            try (InputStream fis = new BufferedInputStream(new FileInputStream(sourceFile), 4096);
+                 OutputStream fos = new BufferedOutputStream(new FileOutputStream(destFile, true), 4096)) {
 
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 // read source files in chunks
-                byte[] buffer = new byte[16];
-                int numOfBytes = fis.read(buffer);
-                while (numOfBytes > 0) {
-                    byteArrayOutputStream.write(buffer, 0, numOfBytes);
-                    numOfBytes = fis.read(buffer);
+                int retByte = fis.read();
+                while (retByte > 0) {
+                    byteArrayOutputStream.write(retByte);
+                    retByte = fis.read();
                 }
 
                 // write data to dest files in chunks
-                byte[] byteBuffer = new byte[16];
-                ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+                InputStream byteArrayInputStream = new BufferedInputStream(
+                        new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), 4096);
 
-                int numOfBytes2 = byteArrayInputStream.read(byteBuffer, 0, byteBuffer.length);
+                int numOfBytes2 = byteArrayInputStream.read();
                 while (numOfBytes2 != -1) {
-                    fos.write(new String(byteBuffer, 0, numOfBytes2).getBytes());
-                    numOfBytes2 = byteArrayInputStream.read(byteBuffer, 0, byteBuffer.length);
+                    fos.write(numOfBytes2);
+                    numOfBytes2 = byteArrayInputStream.read();
                 }
                 fos.flush();
 
