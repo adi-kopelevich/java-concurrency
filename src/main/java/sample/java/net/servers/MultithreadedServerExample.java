@@ -10,34 +10,18 @@ import java.util.concurrent.Executors;
  * Created by kopelevi on 29/09/2015.
  */
 public class MultithreadedServerExample implements Runnable {
-    private final int port;
-    private boolean isEnabled = true;
-    private ServerSocket serverSocket = null;
+
+    private final ServerSocket serverSocket;
+
+    private volatile boolean isEnabled = true;
 
     MultithreadedServerExample(int port) {
-        this.port = port;
-        initServerSocket();
-    }
-
-    private void initServerSocket() {
         try {
             serverSocket = new ServerSocket(port);
             System.out.println("Starting Server...");
         } catch (IOException e) {
             throw new RuntimeException("Failed to init socket server: ", e);
         }
-    }
-
-    public synchronized void setEnabled(boolean enabled) throws IOException {
-        this.isEnabled = enabled;
-        if (enabled) {
-            System.out.println("Server is going up...");
-            initServerSocket();
-        } else {
-            System.out.println("Server is going down...");
-            serverSocket.close();
-        }
-
     }
 
     @Override
@@ -51,8 +35,19 @@ public class MultithreadedServerExample implements Runnable {
                 executorService.shutdown();                // process the client request
                 System.out.println("Server released request processing...");
             } catch (IOException e) {
-                e.printStackTrace();
+                if (!isEnabled) {
+                    System.out.println("Server Stopped.");
+                    break;
+                } else {
+                    e.printStackTrace();
+                }
             }
         }
+    }
+
+    public void stopServer() throws IOException {
+        this.isEnabled = false;
+        System.out.println("Server is going down...");
+        serverSocket.close();
     }
 }

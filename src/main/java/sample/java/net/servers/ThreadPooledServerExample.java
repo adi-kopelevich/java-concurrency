@@ -10,36 +10,20 @@ import java.util.concurrent.Executors;
  * Created by kopelevi on 29/09/2015.
  */
 public class ThreadPooledServerExample implements Runnable {
-    private final int port;
-    private boolean isEnabled = true;
-    private ServerSocket serverSocket = null;
+
+    private final ServerSocket serverSocket;
     private final ExecutorService executorService;
 
-    public ThreadPooledServerExample(int port, int threadPoolSize) {
-        this.port = port;
-        executorService = Executors.newFixedThreadPool(threadPoolSize);
-        initServerSocket();
-    }
+    private volatile boolean isEnabled = true;
 
-    private void initServerSocket() {
+    public ThreadPooledServerExample(int port, int threadPoolSize) {
+        executorService = Executors.newFixedThreadPool(threadPoolSize);
         try {
             serverSocket = new ServerSocket(port);
             System.out.println("Starting Server...");
         } catch (IOException e) {
             throw new RuntimeException("Failed to init socket server: ", e);
         }
-    }
-
-    public synchronized void setEnabled(boolean enabled) throws IOException {
-        this.isEnabled = enabled;
-        if (enabled) {
-            System.out.println("Server is going up...");
-            initServerSocket();
-        } else {
-            System.out.println("Server is going down...");
-            serverSocket.close();
-        }
-
     }
 
     @Override
@@ -51,10 +35,20 @@ public class ThreadPooledServerExample implements Runnable {
                 executorService.execute(new ProcessingWorker(socket));                               // process the client request
                 System.out.println("Server released request processing...");
             } catch (IOException e) {
-                e.printStackTrace();
+                if (!isEnabled) {
+                    System.out.println("Server Stopped.");
+                    break;
+                } else {
+                    e.printStackTrace();
+                }
             }
         }
         executorService.shutdown();
     }
 
+    public void stopServer() throws IOException {
+        this.isEnabled = false;
+        System.out.println("Server is going down...");
+        serverSocket.close();
+    }
 }
