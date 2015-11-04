@@ -13,25 +13,23 @@ public class FileStreamExample {
             StringBuilder strData = new StringBuilder();
             try (FileInputStream fis = new FileInputStream(sourceFile);
                  FileOutputStream fos = new FileOutputStream(destFile)) {
+
+                // read source files in chunks
                 byte[] buffer = new byte[16];
                 int numOfBytes = fis.read(buffer);
                 while (numOfBytes > 0) {
                     strData.append(new String(buffer, 0, numOfBytes));
-//                    System.out.println("numOfBytes= " + numOfBytes + ", Data= " + strData);
                     numOfBytes = fis.read(buffer);
                 }
-                int srcPos = 0;
-                byte[] data = strData.toString().getBytes();
-                fos.write(data);
-//                byte[] byteBuffer = new byte[16];
-//
-//                while (srcPos != data.length - 1) {
-//                    System.out.println(srcPos);
-//                    System.arraycopy(data, srcPos, byteBuffer, 0, byteBuffer.length);
-//                    System.out.println(new String(byteBuffer));
-//                    fos.write(byteBuffer, 0,  byteBuffer.length);
-//                    srcPos = srcPos + byteBuffer.length;
-//                }
+
+                // write data to dest files in chunks
+                byte[] byteBuffer = new byte[16];
+                ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(strData.toString().getBytes());
+                int numOfBytes2 = byteArrayInputStream.read(byteBuffer, 0, byteBuffer.length);
+                while (numOfBytes2 != -1) {
+                    fos.write(new String(byteBuffer, 0, numOfBytes2).getBytes());
+                    numOfBytes2 = byteArrayInputStream.read(byteBuffer, 0, byteBuffer.length);
+                }
 
 
             } catch (FileNotFoundException e) {
