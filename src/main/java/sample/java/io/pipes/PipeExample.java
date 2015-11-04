@@ -14,7 +14,7 @@ public class PipeExample {
         final PipedInputStream input = new PipedInputStream(output);
 
         Thread writerThread = new Thread(new Runnable() {
-            String msg = "Hi Mate!";
+            String msg = "Hi Mate! Trategy when you lose control and you got no sole";
 
             @Override
             public void run() {
@@ -38,11 +38,14 @@ public class PipeExample {
             @Override
             public void run() {
                 try {
-                    int currentChar = input.read();
+                    byte[] buffer = new byte[16];
+                    int currentChar = input.read(buffer);
                     while (currentChar != -1) {
-                        System.out.println(Thread.currentThread().getName() + ": read -" + String.valueOf((char) currentChar));
-                        currentChar = input.read();
+                        System.out.println(Thread.currentThread().getName() + ": read chunk -" + new String(buffer, 0, currentChar));
+                        currentChar = input.read(buffer);
                     }
+
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
