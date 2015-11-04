@@ -1,6 +1,5 @@
 package sample.java.net.servers;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -12,7 +11,7 @@ public class ProcessingWorker implements Runnable {
 
     private final Socket socket;
 
-    public ProcessingWorker(Socket socket){
+    public ProcessingWorker(Socket socket) {
         this.socket = socket;
     }
 
@@ -22,26 +21,27 @@ public class ProcessingWorker implements Runnable {
     }
 
     private void processRequest(Socket socket) {
+        long time = System.currentTimeMillis();
         try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        try (InputStream inputStream = socket.getInputStream();
-             OutputStream outputStream = socket.getOutputStream()) {
             StringBuilder msg = new StringBuilder();
+            InputStream inputStream = socket.getInputStream();
             int currentByte = inputStream.read();
-            while (currentByte != -1) {
+            while (currentByte != 255) {
                 msg.append((char) currentByte);
                 currentByte = inputStream.read();
             }
             System.out.println("Server Received: " + msg.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
+
+            String returnMsg = "HTTP/1.1 200 OK\n\n<html><body>" + "Server: " + time + "(" + msg.toString() + ")</body></html>";
+
+            OutputStream outputStream = socket.getOutputStream();
+            outputStream.write(returnMsg.getBytes());
+            outputStream.flush();
+
+            inputStream.close();
+            outputStream.close();
             socket.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
