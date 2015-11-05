@@ -7,6 +7,7 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -20,7 +21,7 @@ public class EchoSingleThreadServerClient {
         ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         List<String> msgs = new ArrayList<String>(10);
         for (int i = 0; i < 30; i++) {
-            msgs.add("MSG" + i);
+            msgs.add("MSG" + i +"-"+ UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString() + UUID.randomUUID().toString());
         }
         for (String msg : msgs) {
             executorService.execute(new Runnable() {
@@ -28,7 +29,7 @@ public class EchoSingleThreadServerClient {
                 public void run() {
                     // sleep randomly, up to 3 sec
                     try {
-                        Thread.sleep(new Random().nextInt(10)*1000);
+                        Thread.sleep(new Random().nextInt(10) * 1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

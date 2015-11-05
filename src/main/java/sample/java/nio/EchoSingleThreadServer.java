@@ -16,7 +16,7 @@ public class EchoSingleThreadServer implements Runnable {
 
     private static final String LOCALHOST = "localhost";
     private static final int PORT = 9999;
-    private static final int BUFFER_SIZE = 128;
+    private static final int BUFFER_SIZE = 64;
 
     private final Selector selector;
 
@@ -104,17 +104,33 @@ public class EchoSingleThreadServer implements Runnable {
         try (SocketChannel socketChannel = (SocketChannel) key.channel()) {
             // read data from channel
             ByteBuffer readBuffer = ByteBuffer.allocate(BUFFER_SIZE);
+            StringBuilder stringBuilder = new StringBuilder();
+            // read data from socket channel and write to buffer
             int numRead = socketChannel.read(readBuffer);
-            if (numRead != -1) {
+            int chunkCount = 0;
+            while (numRead != -1) {
                 // flip buffer in order to read after write is done
                 readBuffer.flip();
                 // write to console the msg received from client
-                System.out.println("Read: " + new String(readBuffer.array()).trim());
+                while (readBuffer.hasRemaining()) {
+                    stringBuilder.append((char) readBuffer.get());
+                }
+                chunkCount++;
+                // set buffer for writing to it (position =0)
                 readBuffer.clear();
+                // read data from socket channel and write to buffer
+                numRead = socketChannel.read(readBuffer);
             }
+            System.out.println("Received: " + stringBuilder.toString() + " (Chunks = " + chunkCount + ")");
         } catch (IOException e) {
             System.out.println("Failed to handle socket read op. cause: " + e);
         }
+    }
+
+    private String processBuffer(ByteBuffer buffer, int numberRead) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        return stringBuilder.toString();
     }
 
     private void closeSocketChannel(SocketChannel socketChannel) {
