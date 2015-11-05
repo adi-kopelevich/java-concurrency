@@ -1,12 +1,11 @@
 package sample.java.nio;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /**
@@ -14,38 +13,53 @@ import java.util.concurrent.Future;
  */
 public class AsynchronousFileChannelExample {
 
-    private static int readBytesToBuffer(AsynchronousFileChannel fileChannel, ByteBuffer buffer, int position) throws ExecutionException, InterruptedException {
-        Future<Integer> future = fileChannel.read(buffer, position);
-        while (!future.isDone()) {
-            // wait
-        }
-        return future.get().intValue();
-    }
-
     public static void main(String[] args) {
-        Path path = Paths.get("C:\\hi.txt");
-        int pos = 0;
-        StringBuilder chunkStringBuilder = new StringBuilder();
-
-        try (AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(path, StandardOpenOption.READ);) {
-            ByteBuffer buffer = ByteBuffer.allocate(48);
-            int bytsRead = readBytesToBuffer(fileChannel, buffer, pos);
-            while (bytsRead != -1) {
-                System.out.println("**** Chunk ****");
-                buffer.flip();
-                byte[] data = new byte[buffer.limit()];
-                buffer.get(data);
-                System.out.println(new String(data));
+        StringBuilder stringBuilder = new StringBuilder();
+        String filePathStr = "c:\\hi3.txt";
+        Path filePath = Paths.get(filePathStr);
+        if (Files.exists(filePath)) {
+            try (AsynchronousFileChannel asynchronousFileChannel = AsynchronousFileChannel.open(filePath, StandardOpenOption.READ)) {
+                ByteBuffer buffer = ByteBuffer.allocate(16);
                 buffer.clear();
-                pos += bytsRead;
-                bytsRead = readBytesToBuffer(fileChannel, buffer, pos);
+
+                // first cycle of read chunk from file to buffer
+                Future<Integer> future = asynchronousFileChannel.read(buffer, 0);
+                while (!future.isDone()) {
+                    System.out.println("Waiting...");
+                }
+                int numberOfBytes = future.get().intValue();
+
+                // loop for reading from buffer, prepare for write and write again
+                int pos = 0;
+                while (numberOfBytes > 0) {
+                    // read from buffer
+                    buffer.flip();
+                    System.out.println("*** Chunk ***");
+                    // read while has remaining
+                    while (buffer.hasRemaining()) {
+                        stringBuilder.append((char) buffer.get());
+                    }
+                    // prepare buffer for next write to it
+                    buffer.clear();
+
+                    //
+                    System.out.println(stringBuilder.toString());
+
+                    // re-cycle of read chunk from file to buffer
+                    pos += numberOfBytes;
+                    future = asynchronousFileChannel.read(buffer, pos);
+                    while (!future.isDone()) {
+                        System.out.println("Waiting...");
+                    }
+                    numberOfBytes = future.get().intValue();
+                }
+                // print entire data
+                System.out.println(stringBuilder.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+        } else {
+            System.err.println("File dosent exists... " + filePathStr);
         }
     }
 }
