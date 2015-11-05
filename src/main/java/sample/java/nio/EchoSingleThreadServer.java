@@ -13,10 +13,12 @@ import java.util.concurrent.Executors;
  */
 public class EchoSingleThreadServer implements Runnable {
     private volatile boolean stop = false;
-    private final Selector selector;
+
     private static final String LOCALHOST = "localhost";
     private static final int PORT = 9999;
     private static final int BUFFER_SIZE = 128;
+
+    private final Selector selector;
 
     public EchoSingleThreadServer() {
         selector = initSelectorWithServerChannel();
@@ -43,7 +45,7 @@ public class EchoSingleThreadServer implements Runnable {
         }
     }
 
-    public void run() {
+    public void run() { // selector loop
         while (!stop) {
             System.out.println("Waiting for select (blocking)...");
             int noOfKeys = 0;
@@ -70,7 +72,6 @@ public class EchoSingleThreadServer implements Runnable {
                 e.printStackTrace();
             } catch (ClosedSelectorException e) {
                 System.out.println("Selector was closed, break loop...");
-                e.printStackTrace();
                 break;
             } catch (Exception e) {
                 System.out.println("General error occurred: " + e.getMessage());
@@ -128,10 +129,9 @@ public class EchoSingleThreadServer implements Runnable {
     }
 
     public void stop() {
+        System.out.println("Going to stop server...");
         stop = true;
-        System.out.println("Server was stopped...");
         try {
-            System.out.println("Going to stop server...");
             if (selector != null) {
                 selector.close();
             }
