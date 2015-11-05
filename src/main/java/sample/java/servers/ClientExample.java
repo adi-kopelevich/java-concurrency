@@ -23,23 +23,24 @@ public class ClientExample implements Runnable {
             Socket socket = new Socket(host, port);
             String msg = UUID.randomUUID().toString();
 
-            byte[] dataBytes = msg.getBytes();
-            OutputStream outputStream = new BufferedOutputStream(socket.getOutputStream(), 4096);
-            outputStream.write(dataBytes);
-            outputStream.write(new byte[]{-1});
-            outputStream.flush();
+            Writer outputStreamBufferedWriter = new BufferedWriter(
+                    new OutputStreamWriter(socket.getOutputStream()), 4096);
+            outputStreamBufferedWriter.write(msg);
+            outputStreamBufferedWriter.write('$');
+            outputStreamBufferedWriter.flush();
             System.out.println(Thread.currentThread().getName() + ": Request - " + msg);
 
             StringBuilder responseMsg = new StringBuilder();
-            InputStream inputStream = new BufferedInputStream(socket.getInputStream(), 4096);
-            int currentByte = inputStream.read();
+            Reader inputStreamBufferedReader = new BufferedReader(
+                    new InputStreamReader(socket.getInputStream()), 4096);
+            int currentByte = inputStreamBufferedReader.read();
             while (currentByte != -1) {
                 responseMsg.append((char) currentByte);
-                currentByte = inputStream.read();
+                currentByte = inputStreamBufferedReader.read();
             }
             System.out.println(Thread.currentThread().getName() + ": Response - " + responseMsg.toString());
-            inputStream.close();
-            outputStream.close();
+            inputStreamBufferedReader.close();
+            outputStreamBufferedWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

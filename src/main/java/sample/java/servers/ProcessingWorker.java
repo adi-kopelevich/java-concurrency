@@ -1,9 +1,6 @@
 package sample.java.servers;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 
 /**
@@ -26,22 +23,24 @@ public class ProcessingWorker implements Runnable {
         long time = System.currentTimeMillis();
         try {
             StringBuilder msg = new StringBuilder();
-            InputStream inputStream = new BufferedInputStream(socket.getInputStream(), 4096);
-            int currentByte = inputStream.read();
-            while (currentByte != 255) {
-                msg.append((char) currentByte);
-                currentByte = inputStream.read();
+            Reader inputStreamBufferedReader = new BufferedReader(
+                    new InputStreamReader(socket.getInputStream()), 4096);
+            int currentChar = inputStreamBufferedReader.read();
+            while (currentChar != '$') { // $ - msg delimiter, UUID shouldnt contain '$' character
+                msg.append((char) currentChar);
+                currentChar = inputStreamBufferedReader.read();
             }
             System.out.println("Server Received: " + msg.toString());
 
             String returnMsg = "HTTP/1.1 200 OK\n\n<html><body>" + "Server: " + time + "(" + msg.toString() + ")</body></html>";
 
-            OutputStream outputStream = new BufferedOutputStream(socket.getOutputStream(), 4096);
-            outputStream.write(returnMsg.getBytes());
-            outputStream.flush();
+            Writer outputStreamBufferedWriter = new BufferedWriter(
+                    new OutputStreamWriter(socket.getOutputStream()), 4096);
+            outputStreamBufferedWriter.write(returnMsg);
+            outputStreamBufferedWriter.flush();
 
-            inputStream.close();
-            outputStream.close();
+            inputStreamBufferedReader.close();
+            outputStreamBufferedWriter.close();
             socket.close();
         } catch (Exception e) {
             e.printStackTrace();
