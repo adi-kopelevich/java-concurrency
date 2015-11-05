@@ -11,7 +11,7 @@ import java.io.LineNumberReader;
 public class LineNumberReaderExample {
 
     public static void main(String[] args) {
-        String filePath = "C:\\hi.txt";
+        String filePath = "C:\\hi3.txt";
 
 
         try (LineNumberReader reader = new LineNumberReader(new FileReader(filePath))) {

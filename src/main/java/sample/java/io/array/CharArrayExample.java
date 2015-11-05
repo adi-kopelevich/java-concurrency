@@ -1,8 +1,6 @@
 package sample.java.io.array;
 
-import java.io.CharArrayReader;
-import java.io.CharArrayWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.UUID;
 
 /**
@@ -23,8 +21,12 @@ public class CharArrayExample {
         }
 
 
+        int offset = 2;
+        int length = 6;
+        System.out.println("Read with offset=" + offset + " and length=" + 6);
+
         int currentChar = 0;
-        try (CharArrayReader reader = new CharArrayReader(charArray)) {
+        try (Reader reader = new BufferedReader(new CharArrayReader(charArray, offset, length), 4096)) {
             currentChar = reader.read();
             while (currentChar != -1) {
                 System.out.println("Read: " + String.valueOf((char) currentChar));

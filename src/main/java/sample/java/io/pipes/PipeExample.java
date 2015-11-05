@@ -1,8 +1,6 @@
 package sample.java.io.pipes;
 
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.io.*;
 
 /**
  * Created by kopelevi on 27/09/2015.
@@ -60,6 +58,57 @@ public class PipeExample {
 
         readerThread.start();
         writerThread.start();
+
+        final PipedWriter writer = new PipedWriter();
+        final PipedReader reader = new PipedReader(writer);
+
+        Thread writerThread2 = new Thread(new Runnable() {
+            String msg2 = "It's Trategty!";
+
+            @Override
+            public void run() {
+                try {
+                    writer.write(msg2);
+                    System.out.println(Thread.currentThread().getName() + ": written - " + msg2);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        writer.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        });
+
+        Thread readerThread2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    char[] buffer = new char[16];
+                    int currentChar = reader.read(buffer);
+                    while (currentChar != -1) {
+                        System.out.println(Thread.currentThread().getName() + ": read chunk -" + new String(buffer, 0, currentChar));
+                        currentChar = reader.read(buffer);
+                    }
+
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        readerThread2.start();
+        writerThread2.start();
 
     }
 }
