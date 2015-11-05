@@ -26,13 +26,13 @@ public class GatherExample {
 
             ByteBuffer[] bufferArray = {header, body};
 
-            outputChannel.truncate(10);
+            outputChannel.truncate(2);  //truncate the file to the given size
 
             long bytesWriten = outputChannel.write(bufferArray); //write from buffer. (read data from buffers to chanel)
-            while (bytesWriten!=0){
+            while (bytesWriten>0){
                 bytesWriten = outputChannel.write(bufferArray); //There is no guarantee of how many bytes the write method writes to the FileChannel, hence the while loop
             }
-            outputChannel.force(true);
+            outputChannel.force(true);  // flush to disk
 
         } catch (IOException e) {
             e.printStackTrace();

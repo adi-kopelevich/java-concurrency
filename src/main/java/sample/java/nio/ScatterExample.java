@@ -12,7 +12,7 @@ public class ScatterExample {
 
     public static void main(String[] args) {
 
-        try (RandomAccessFile aFile = new RandomAccessFile("c:\\hi.txt", "rw");
+        try (RandomAccessFile aFile = new RandomAccessFile("c:\\hi2.txt", "rw");
              FileChannel inChannel = aFile.getChannel()) {
 
 
@@ -23,7 +23,7 @@ public class ScatterExample {
 
             ByteBuffer[] bufferArray = {header, body};
 
-            long bytesRead = inChannel.read(bufferArray); //read into buffer. (write data into buffers)
+            long bytesRead = inChannel.read(bufferArray); //read from chanel write to buffer. (write data into buffers)
             while (bytesRead != -1) {
 
                 System.out.println("--- Header ---");
