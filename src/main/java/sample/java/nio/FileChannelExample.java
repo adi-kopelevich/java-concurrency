@@ -11,7 +11,7 @@ import java.nio.channels.FileChannel;
 public class FileChannelExample {
 
     public static void main(String[] args) {
-        try (FileInputStream aFile = new FileInputStream("c:\\hi.txt");
+        try (FileInputStream aFile = new FileInputStream("c:\\hi_updated.txt");
              FileChannel inChannel = aFile.getChannel()) {
 
             //create buffer with capacity of 48 bytes
@@ -19,7 +19,7 @@ public class FileChannelExample {
 
             int bytesRead = inChannel.read(buf); //read into buffer.
             while (bytesRead != -1) {
-
+                System.out.println("------- Start cunck");
                 buf.flip();  //make buffer ready for read
 
                 while (buf.hasRemaining()) {
@@ -27,6 +27,7 @@ public class FileChannelExample {
                 }
 
                 buf.clear(); //make buffer ready for writing
+                System.out.println("------ End cunck");
                 bytesRead = inChannel.read(buf);
             }
         } catch (IOException e) {
