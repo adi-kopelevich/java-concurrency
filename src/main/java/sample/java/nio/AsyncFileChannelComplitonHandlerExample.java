@@ -35,9 +35,9 @@ public class AsyncFileChannelComplitonHandlerExample {
             }
         };
 
-        Path path = Paths.get("C:\\hi.txt");
+        Path path = Paths.get("C:\\hi3.txt");
         AsynchronousFileChannel asynFileChannel = AsynchronousFileChannel.open(path, StandardOpenOption.READ);
-        ByteBuffer buffer = ByteBuffer.allocate(1024);
+        ByteBuffer buffer = ByteBuffer.allocate(8);
         long pos = 0;
 
         ExecutorService executorService = Executors.newSingleThreadExecutor();

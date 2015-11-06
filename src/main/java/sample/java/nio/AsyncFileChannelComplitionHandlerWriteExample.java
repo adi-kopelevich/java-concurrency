@@ -29,7 +29,7 @@ public class AsyncFileChannelComplitionHandlerWriteExample {
 
         Path path = Paths.get("c:\\hi3.txt");
         try (AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(path, StandardOpenOption.WRITE)) {
-            ByteBuffer buffer = ByteBuffer.allocate(1024);
+            ByteBuffer buffer = ByteBuffer.allocate(32);
             buffer.put("Hi MAN!!! U kick ass".getBytes());
             buffer.flip();
             fileChannel.write(buffer, 0,buffer,completionHandler);
