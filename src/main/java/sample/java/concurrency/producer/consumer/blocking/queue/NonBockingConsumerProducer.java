@@ -28,7 +28,7 @@ public class NonBockingConsumerProducer {
                     System.out.println(Thread.currentThread().getName() + " producer rejected, retry: " + retries++);
                     Thread.sleep(new Random().nextInt(3000));
                 }
-                System.out.println(Thread.currentThread().getName() + " - produced: " + msg + "(total: " + retries + ", "+blockingQueue.size()+")");
+                System.out.println(Thread.currentThread().getName() + " - produced: " + msg + "(total: " + retries + ", " + blockingQueue.size() + ")");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -50,7 +50,7 @@ public class NonBockingConsumerProducer {
                 String msg = blockingQueue.poll(1, TimeUnit.MILLISECONDS);
                 while (msg == null) {
                     System.out.println(Thread.currentThread().getName() + "consumer rejected, retry: " + retries++);
-                    Thread.sleep(new Random().nextInt(3000));
+//                    Thread.sleep(new Random().nextInt(3000));
                     msg = blockingQueue.poll(1, TimeUnit.MICROSECONDS);
                 }
                 System.out.println(Thread.currentThread().getName() + " - consumed: " + msg + "(total: " + retries + ")");
@@ -60,7 +60,9 @@ public class NonBockingConsumerProducer {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
+
+        long startTime = System.currentTimeMillis();
 
         BlockingQueue<String> blockingQueue = new ArrayBlockingQueue<String>(5);
 
@@ -75,6 +77,14 @@ public class NonBockingConsumerProducer {
             consumerExecutor.execute(new Consumer(blockingQueue));
         }
         consumerExecutor.shutdown();
+
+        boolean finishedOnTime = consumerExecutor.awaitTermination(10, TimeUnit.SECONDS);
+        long endTime = System.currentTimeMillis();
+
+        if (finishedOnTime) {
+            System.out.println("Total [ms]: " + String.valueOf(endTime - startTime));
+        }
+
 
     }
 

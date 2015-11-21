@@ -1,6 +1,5 @@
 package sample.java.concurrency.producer.consumer.blocking.queue;
 
-import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -19,7 +18,7 @@ public class Consumer implements Runnable {
         Integer val = null;
         try {
             System.out.println(Thread.currentThread().getName() + ": consumed " + queue.take() + ", queue_size: " + queue.size());
-            Thread.sleep(new Random().nextInt(3000));
+//            Thread.sleep(new Random().nextInt(3000));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

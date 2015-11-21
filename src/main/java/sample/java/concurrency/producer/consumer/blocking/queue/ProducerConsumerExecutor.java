@@ -1,31 +1,38 @@
 package sample.java.concurrency.producer.consumer.blocking.queue;
 
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 /**
  * Created by kopelevi on 16/09/2015.
  */
 public class ProducerConsumerExecutor {
 
-    public static void main(String[] args) {
+    private static final int NUM_OF_MSGS = 100;
+
+    public static void main(String[] args) throws InterruptedException {
+
+        long startTime = System.currentTimeMillis();
+
         BlockingQueue<Integer> tasks = new ArrayBlockingQueue<Integer>(5);
 
-        final int numOfProducers = 30;
-        ExecutorService producers = Executors.newFixedThreadPool(5);
-        for (int i = 0; i < numOfProducers; i++) {
+        ExecutorService producers = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        for (int i = 0; i < NUM_OF_MSGS; i++) {
             producers.execute(new Producer(tasks));
         }
         producers.shutdown();
 
-        final int numOfConsumers = 30;
-        ExecutorService consumers = Executors.newFixedThreadPool(5);
-        for (int i = 0; i < numOfConsumers; i++) {
+        ExecutorService consumers = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        for (int i = 0; i < NUM_OF_MSGS; i++) {
             consumers.execute(new Consumer(tasks));
         }
         consumers.shutdown();
+
+        boolean finishedOnTime = consumers.awaitTermination(10, TimeUnit.SECONDS);
+        long endTime = System.currentTimeMillis();
+
+        if (finishedOnTime) {
+            System.out.println("Total [ms]: " + String.valueOf(endTime - startTime));
+        }
     }
 
 }

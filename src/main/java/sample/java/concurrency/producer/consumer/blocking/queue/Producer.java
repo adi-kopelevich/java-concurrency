@@ -18,7 +18,7 @@ public class Producer implements Runnable {
     public void run() {
         Integer val = new Random().nextInt(100);
         try {
-            Thread.sleep(new Random().nextInt(1000));
+//            Thread.sleep(new Random().nextInt(1000));
             queue.put(val);
             System.out.println(Thread.currentThread().getName() + ": produced "+val+", queue_size: " + queue.size());
         } catch (InterruptedException e) {
