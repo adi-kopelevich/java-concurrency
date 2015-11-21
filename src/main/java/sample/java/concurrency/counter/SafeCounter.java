@@ -3,7 +3,8 @@ package sample.java.concurrency.counter;
 /**
  * Created by kopelevi on 11/09/2015.
  */
-public class Counter {
+public class SafeCounter {
+
     private int counter = 0;
 
     public synchronized void add() {
