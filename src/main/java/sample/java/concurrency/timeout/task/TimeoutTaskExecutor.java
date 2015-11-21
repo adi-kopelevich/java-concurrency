@@ -24,7 +24,7 @@ public class TimeoutTaskExecutor {
         });
         try {
             Object retObj = future.get(TIME_LIMIT_IN_SEC, TimeUnit.SECONDS);
-            System.out.println("Task completed, return value is " + retObj);
+            System.out.println("Runnable Task completed, return value is " + retObj);
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         } catch (TimeoutException e) {
@@ -49,7 +49,9 @@ public class TimeoutTaskExecutor {
                 try {
                     Thread.sleep((TIME_LIMIT_IN_SEC - 1) * 1000);
                 } catch (InterruptedException e) {
-                    System.out.println(Thread.currentThread().getName() + " was interrupted");
+                    String message = Thread.currentThread().getName() + " was interrupted";
+                    System.out.println(message);
+                    throw new RuntimeException(message);
                 }
                 return "Hi";
             }
